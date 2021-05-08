@@ -1,9 +1,12 @@
 import api from "api/api";
+import Pagination from "components/Pagination";
 import { useEffect, useState } from "react";
 import { SalePage } from "types/sale";
 import { formatLocalDate } from "utils/format";
 
 const DataTable = () => {
+
+  const [activePage, setActivePage] = useState(0);
 
   const [page, setPage] = useState<SalePage>({
     first: true,
@@ -14,36 +17,43 @@ const DataTable = () => {
   });
 
   useEffect(() => {
-    api.get("sales?page=0&size=20&sort=date,desc").then(response => {
+    api.get(`sales?page=${activePage}&size=20&sort=date,desc`).then(response => {
       setPage(response.data);
     })
-  }, [])
+  }, [activePage]);
+
+  const changePage = (index: number) => {
+    setActivePage(index);
+  }
 
   return (
-    <div className="table-responsive">
-      <table className="table table-striped table-sm">
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Vendedor</th>
-            <th>Clientes visitados</th>
-            <th>Negócios fechados</th>
-            <th>Valor</th>
-          </tr>
-        </thead>
-        <tbody>
-          {page.content?.map(item => (
-            <tr key={item.id}>
-              <td>{formatLocalDate(item.date, "dd/MM/yyyy")}</td>
-              <td>{item.seller.name}</td>
-              <td>{item.visited}</td>
-              <td>{item.deals}</td>
-              <td>R$ {item.amount.toFixed(2)}</td>
+    <>
+      <div className="table-responsive">
+        <table className="table table-striped table-sm">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Vendedor</th>
+              <th>Clientes visitados</th>
+              <th>Negócios fechados</th>
+              <th>Valor</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {page.content?.map(item => (
+              <tr key={item.id}>
+                <td>{formatLocalDate(item.date, "dd/MM/yyyy")}</td>
+                <td>{item.seller.name}</td>
+                <td>{item.visited}</td>
+                <td>{item.deals}</td>
+                <td>R$ {item.amount.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Pagination page={page} onPageChange={changePage} />
+    </>
   );
 }
 
